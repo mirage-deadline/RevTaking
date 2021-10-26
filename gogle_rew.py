@@ -1,3 +1,5 @@
+from  aiohttp import ClientSession
+import asyncio
 from bs4 import BeautifulSoup
 import requests
 import re
@@ -8,7 +10,7 @@ from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.action_chains import ActionChains
 from seleniumwire import webdriver
 import pyautogui
-from random import randint
+from random import betavariate, randint
 import os
 
 cities = {
@@ -35,17 +37,11 @@ test = {
 
 def get_source_html(city_dict: dict) -> None:
     
-    login = '1'
-    password = '1'
-    proxy_options = {
-        'proxy': {
-            'https': f'1'
-        },
-        'user-agent': '1'
-    }
+    proxy_options = 0
+    
     driver = webdriver.Chrome(executable_path='chromedriver_win32\\chromedriver.exe', seleniumwire_options=proxy_options)
     driver.maximize_window()
-    cit_names = [city for city in city_dict.keys()]
+    cit_names = [city for city in city_dict.keys()][:1]
 
     
     for number, city in enumerate(cit_names):
@@ -55,7 +51,7 @@ def get_source_html(city_dict: dict) -> None:
         print(f'[INFO] PROGRESS {number}/{len(cit_names)}. CURRENT CITY: {city}')
 
         while True:
-            for j in range(7):
+            for j in range(8):
                 # Роллим вниз, цепляться за элемент мы не можем, так как у гугла другие формы. 
                 pyautogui.moveTo(randint(75, 127), randint(413, 513))
                 pyautogui.scroll(-500)
@@ -63,8 +59,12 @@ def get_source_html(city_dict: dict) -> None:
             element = driver.find_element(by='xpath', value='//*[@id="ppdPk-Ej1Yeb-LgbsSe-tJiF1e"]')
             try:
                 element.click()
-                with open(f'google_data\\source_html\\{city}.html', 'a', encoding='utf8') as file:
-                    file.write(driver.page_source)
+                with open(f'google_data\\hrefs\\{city}.txt', 'a', encoding='utf8') as file:
+                    soup = BeautifulSoup(driver.page_source, 'lxml')
+                    for url in soup.find_all('a', class_='a4gq8e-aVTXAb-haAclf-jRmmHf-hSRGPd'):
+                        # if url.find('span', {'jstcache':'75'}).text == 'Отзывов нет':
+                        #     file.write()
+                        file.write(url['href']+'\n')
             except WebDriverException:
                 # Проверка, если клавиша следующей страницы не будет доступна
                 print('Страницы закончились')
@@ -73,14 +73,36 @@ def get_source_html(city_dict: dict) -> None:
             time.sleep(10)
     print(f'Были обработаны следующие города {", ".join(cit_names)}')
 
-def get_hrefs(file_path: str) -> None:
+async def get_page_info(url: str, number_of_urls: int, current_pos: int, city: str):
     
+    headers = {
+       'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebt/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36' 
+    }
+    async with ClientSession() as session:
+        response = await session.get(url=url, headers=headers)
+        # await asyncio.sleep(0.1)
+        soup = BeautifulSoup(await response.text(), 'lxml')
+
+async def gather_data(file_path):
+    
+    tasks = []
+    # headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'}
+    files = os.listdir(file_path)
     for file in os.listdir(file_path):
         city = file.split('.')[0]
-        with open(os.path.join(file_path, file), 'r', encoding='utf8') as file:
-            raw = file.read()
-        with open('test.txt', 'w', encoding='utf8') as f:
-            f.write(raw)
+
+        with open(os.path.join(file_path, file), encoding='utf8') as file:
+            urls = [url.strip() for url in file.readlines()]
+            length = len(urls)
+
+            for numb, url in enumerate(urls):
+                task = asyncio.create_task(get_page_info(url, length, numb, city))
+                await asyncio.sleep(0)
+                tasks.append(task)
+
+    await asyncio.gather(*tasks)
+    print('Обработка завершена')
+        # with ClientSession(headers=headers, ) 
         # a = re.findall(r'href= \d (.*) class=\d', raw)
         # print(a)   
         # soup = BeautifulSoup(raw, 'lxml')
@@ -92,8 +114,10 @@ def get_hrefs(file_path: str) -> None:
         #     print(f'Были обработаны ссылки по городу {city}')
 
 def main():
-    # get_source_html(cities)
-    get_hrefs(file_path='google_data\\source_html')
+    get_source_html(cities)
+    # get_hrefs(file_path='google_data\\source_html')
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    asyncio.run(gather_data('google_data\\hrefs\\'))
 
 if __name__ == '__main__':
     main()
