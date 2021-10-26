@@ -56,7 +56,7 @@ def get_correct_proxy(html_path:str):
     
 if __name__ == '__main__':
     
-    # path = get_proxy_site_html(url='https://hidemy.name/ru/proxy-list/#list')
+    path = get_proxy_site_html(url='https://hidemy.name/ru/proxy-list/#list')
     get_correct_proxy("proxy\\proxy_url\\raw_proxy.html")
     # with open('proxy\\proxy.txt', encoding='utf8') as file:
     #     print(file.readlines())
