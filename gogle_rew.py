@@ -1,4 +1,3 @@
-import enum
 from  aiohttp import ClientSession
 import asyncio
 from bs4 import BeautifulSoup
@@ -7,6 +6,7 @@ import re
 import lxml
 import pandas as pd
 import time
+from tqdm import tqdm
 from selenium import webdriver as wd
 from selenium.common.exceptions import ElementNotVisibleException, NoSuchElementException, TimeoutException, WebDriverException
 from selenium.webdriver.common.action_chains import ActionChains
@@ -16,11 +16,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from seleniumwire import webdriver
 import pyautogui
+import pyperclip
 from random import randint
 
 import os
-
-import seleniumwire
 
 cities = {
     'RND' : 'https://www.google.com/maps/search/%D0%A0%D0%BE%D1%81%D1%82%D0%BE%D0%B2-%D0%BD%D0%B0-%D0%94%D0%BE%D0%BD%D1%83,+%D0%A0%D0%BE%D1%81%D1%82%D0%BE%D0%B2%D1%81%D0%BA%D0%B0%D1%8F+%D0%BE%D0%B1%D0%BB%D0%B0%D1%81%D1%82%D1%8C+%D0%BE%D1%85%D1%80%D0%B0%D0%BD%D0%BD%D0%BE%D0%B5+%D0%BF%D1%80%D0%B5%D0%B4%D0%BF%D1%80%D0%B8%D1%8F%D1%82%D0%B8%D0%B5/@47.2613873,39.3485092,10z/data=!5m1!1e1?hl=ru-RU',
@@ -94,34 +93,57 @@ def get_source_html(city_dict: dict) -> None:
 
 def get_full_review_link(file_path:str):
     
-    login = ''
-    password = ''
+    login = 'dnxfuf'
+    password = '24lhnBJG9a'
     proxy_options = {
+        'proxy': {
+            'https': f'http://{login}:{password}@193.57.136.78:24531'
+        },
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'
     }
 
     driver = webdriver.Chrome(executable_path='chromedriver_win32\\chromedriver.exe', seleniumwire_options=proxy_options)
     files = os.listdir(file_path)
-    for file in files[:1]:
+    for file in files[5:]:
         short_data = []
         city = file.split('.')[0]
         with open(f'{os.path.join(file_path, file)}', encoding='utf8') as file:
             urls = [url.strip() for url in file.readlines()]
         
-        for url in urls[5:]:
+        for url in tqdm(urls):
             try:
-                print(url)
+                # print(url)
                 driver.get(url)
-                time.sleep(3)
-                with open('testing.html', 'w', encoding='utf8') as file:
-                    file.write(driver.page_source)
-                my_el = WebDriverWait(driver, DELAY).until(EC.presence_of_element_located((By.CLASS_NAME, 'x3AX1-LfntMc-header-title-ij8cu')))
+                driver.maximize_window()
+                WebDriverWait(driver, 10)
+                _ = WebDriverWait(driver, DELAY).until(EC.presence_of_element_located((By.CLASS_NAME, 'x3AX1-LfntMc-header-title-ij8cu')))
                 soup = BeautifulSoup(driver.page_source, 'lxml')
-                # reviews_url_button = soup.find('span', class_='OAO0-ZEhYpd-vJ7A6b OAO0-ZEhYpd-vJ7A6b-qnnXGd')
-                print('работает')
+                pyautogui.hotkey('ctrl', 'shift', 'j')
+                pyautogui.moveTo(1651, 190)
+                pyautogui.click()
+                time.sleep(1.5)
+                pyautogui.moveTo(1409, 212)
+                pyautogui.click()
                 reviews_url_button = driver.find_element(by='xpath', value='//*[@id="pane"]/div/div[1]/div/div/div[2]/div[1]/div[1]/div[2]/div/div[1]/span[1]/span/span/span[2]/span[1]/button')
+                numb_reviews = int(reviews_url_button.text.split(' ')[0])
                 reviews_url_button.click()
-                time.sleep(0.7)
+                WebDriverWait(driver, 10)
+                # Сделать пока не загрузится элемент
+                # Двигаться должны по процентам, именить на абс
+                clicks = [(1651, 190), (1425, 444), (1607, 430), (1744, 497), (1755, 505)]
+                click_types = ['left', 'left', 'left', 'right', 'right']
+
+                for j in range(len(clicks)):
+                    pyautogui.moveTo(*clicks[j])
+                    pyautogui.click(button=click_types[j])
+                    time.sleep(1)
+
+                    if (1651, 190) == clicks[j]:
+                        pyautogui.press([x for x in 'listen'])
+                        time.sleep(0.8)
+
+                request_from_google = pyperclip.paste()
+                print(request_from_google)
                 reviews_url = driver.current_url
 
             except TimeoutException:
@@ -129,7 +151,9 @@ def get_full_review_link(file_path:str):
             except NoSuchElementException:
                 # Клавиши отзывов нет
                 print('Отзывов нет')
+                numb_reviews = 0
                 reviews_url = False
+                request_from_google = False
             except Exception as _ex:
                 print(_ex)
             finally:
@@ -150,10 +174,14 @@ def get_full_review_link(file_path:str):
                     phone = soup.find('button', {'data-tooltip':'Скопировать номер'})['aria-label']
                 else: phone = 'Не указан'
                 
-                short_data.append([city, company_name, address, link, phone, reviews_url])
+                short_data.append([city, company_name, address, link, phone, numb_reviews, url, reviews_url, request_from_google])
         
-        pd.DataFrame(short_data, columns=['City', 'Company', 'Address', 'Site', 'Phone', 'Reviews url']).to_csv(os.path.join('ALL.csv'), index=False)
-    
+        pd.DataFrame(short_data, columns=['City', 'Company', 'Address', 'Site', 'Phone', 'Count of reviews', 'Main URL', 'Reviews url', 'JSON ANS']).to_csv(os.path.join(f'google_data\\company_info\\{city}.csv'), index=False)
+        print('2 минуты отдыхаем')
+        driver.close()
+        driver.quit()
+        time.sleep(120)
+
 def main():
     get_full_review_link('google_data\\hrefs\\')
 
