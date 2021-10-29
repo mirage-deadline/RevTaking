@@ -1,8 +1,4 @@
-from  aiohttp import ClientSession
-import asyncio
 from bs4 import BeautifulSoup
-import requests
-import re
 import lxml
 import pandas as pd
 import time
@@ -18,6 +14,7 @@ from seleniumwire import webdriver
 import pyautogui
 import pyperclip
 from random import randint
+# import sys
 
 import os
 
@@ -104,7 +101,7 @@ def get_full_review_link(file_path:str):
 
     driver = webdriver.Chrome(executable_path='chromedriver_win32\\chromedriver.exe', seleniumwire_options=proxy_options)
     files = os.listdir(file_path)
-    for file in files[5:]:
+    for file in files[13:]:
         short_data = []
         city = file.split('.')[0]
         with open(f'{os.path.join(file_path, file)}', encoding='utf8') as file:
@@ -118,11 +115,14 @@ def get_full_review_link(file_path:str):
                 WebDriverWait(driver, 10)
                 _ = WebDriverWait(driver, DELAY).until(EC.presence_of_element_located((By.CLASS_NAME, 'x3AX1-LfntMc-header-title-ij8cu')))
                 soup = BeautifulSoup(driver.page_source, 'lxml')
-                pyautogui.hotkey('ctrl', 'shift', 'j')
-                pyautogui.moveTo(1651, 190)
-                pyautogui.click()
-                time.sleep(1.5)
-                pyautogui.moveTo(1409, 212)
+                time.sleep(3)
+                pyautogui.hotkey('ctrl', 'shift', 'j')              
+                # pyautogui.moveTo(x=1620, y=242)
+                # time.sleep(0.2)
+                # pyautogui.click()
+                # time.sleep(0.7)
+                pyautogui.moveTo(x=1280, y=270)
+                time.sleep(1)
                 pyautogui.click()
                 reviews_url_button = driver.find_element(by='xpath', value='//*[@id="pane"]/div/div[1]/div/div/div[2]/div[1]/div[1]/div[2]/div/div[1]/span[1]/span/span/span[2]/span[1]/button')
                 numb_reviews = int(reviews_url_button.text.split(' ')[0])
@@ -130,17 +130,21 @@ def get_full_review_link(file_path:str):
                 WebDriverWait(driver, 10)
                 # Сделать пока не загрузится элемент
                 # Двигаться должны по процентам, именить на абс
-                clicks = [(1651, 190), (1425, 444), (1607, 430), (1744, 497), (1755, 505)]
-                click_types = ['left', 'left', 'left', 'right', 'right']
+                clicks = [(1620, 242), (1308, 560), (1548, 529), (1646, 631), (1656, 642)]
+                click_types = ['left', 'left', 'left', 'right', 'left']
 
                 for j in range(len(clicks)):
                     pyautogui.moveTo(*clicks[j])
                     pyautogui.click(button=click_types[j])
-                    time.sleep(1)
+                    time.sleep(2)
 
-                    if (1651, 190) == clicks[j]:
+                    if (1620, 242) == clicks[j]:
+                        pyautogui.hotkey('ctrl', 'a')
+                        time.sleep(1.5)
+                        pyautogui.press('backspace')
+                        time.sleep(2)
                         pyautogui.press([x for x in 'listen'])
-                        time.sleep(0.8)
+                        time.sleep(2)
 
                 request_from_google = pyperclip.paste()
                 print(request_from_google)
@@ -157,6 +161,7 @@ def get_full_review_link(file_path:str):
             except Exception as _ex:
                 print(_ex)
             finally:
+                pyautogui.hotkey('ctrl', 'shift', 'j')
                 if soup.find('h1'):
                     company_name = soup.find('h1').find('span').text
                 else:
@@ -175,11 +180,10 @@ def get_full_review_link(file_path:str):
                 else: phone = 'Не указан'
                 
                 short_data.append([city, company_name, address, link, phone, numb_reviews, url, reviews_url, request_from_google])
-        
         pd.DataFrame(short_data, columns=['City', 'Company', 'Address', 'Site', 'Phone', 'Count of reviews', 'Main URL', 'Reviews url', 'JSON ANS']).to_csv(os.path.join(f'google_data\\company_info\\{city}.csv'), index=False)
         print('2 минуты отдыхаем')
-        driver.close()
-        driver.quit()
+        # driver.close()
+        # driver.quit()
         time.sleep(120)
 
 def main():
