@@ -99,11 +99,11 @@ async def gather_base_info(file_path:str):
 
         with open(os.path.join(file_path, file), encoding='utf8') as f:
             urls = [url.strip() for url in f.readlines()]     
-        lenght = len(urls)
-        
-        for pos, url in enumerate(urls):                   
-            task = asyncio.create_task(get_base_info(url, city, pos, lenght))
-            tasks.append(task)
+            lenght = len(urls)
+            
+            for pos, url in enumerate(urls):                   
+                task = asyncio.create_task(get_base_info(url, city, pos, lenght))
+                tasks.append(task)
         # pd.DataFrame(short_data, columns=['City', 'Company', 'Phone', 'URL', 'Social new']).to_csv(f'2gis\\company_info\\{city}.csv', index=False)
         # await asyncio.sleep(20)
         # pd.DataFrame(short_data, columns=['City', 'Company', 'Phone', 'URL', 'Social new']).to_csv(f'2gis\\company_info\\CUMUL-{city}.csv', index=False)
@@ -142,7 +142,7 @@ async def get_base_info(url: str, city: str, pos, lenght):
 
 def concat_pandas(file_path: str):
 
-    files = os.listdir(file_path)
+    files = os.listdir(file_path)[8:]
     df = pd.DataFrame()
 
     for file in files:

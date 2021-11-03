@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import lxml
 import json
-from fake_head import headers
+# from fake_head import headers
 import random
 import urllib
 
@@ -13,10 +13,12 @@ import urllib
 
 def get_proxy_site_html(url: str) -> str:
 
-    header = {'user-agent': headers[random.randint(0, len(headers))]}
+    headers = {
+       'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebt/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36' 
+    }
     proxies = {'http':'http://186.24.4.249:8080'}   
     r = requests.Session()
-    response = r.get(url, headers=header, proxies=proxies)
+    response = r.get(url, headers=headers, proxies=proxies)
     soup = BeautifulSoup(response.text, 'lxml')
 
     html_path = "proxy\\proxy_url\\raw_proxy.html"

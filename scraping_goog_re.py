@@ -4,7 +4,6 @@ from bs4 import BeautifulSoup
 import re
 import pandas as pd
 import os
-import time
 import lxml
 
 async def gather_data(file_path):
@@ -27,7 +26,9 @@ async def gather_data(file_path):
     
 
 async def parse_rew(element_pair: set, max_elements:int, current_pos:int):
-
+    '''
+    Вытягиваем отзывы
+    '''
 
     headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'}
     async with ClientSession() as session:
