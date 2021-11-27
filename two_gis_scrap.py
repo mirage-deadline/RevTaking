@@ -19,13 +19,7 @@ headers = {
 URL_PART_1 = 'https://api.reviews.2gis.com/2.0/branches/'
 URL_PART_2 = '/reviews?fields=meta.providers%2Cmeta.branch_rating%2Cmeta.branch_reviews_count%2Cmeta.total_count%2Creviews.hiding_reason%2Creviews.is_verified&is_advertiser=false&key=37c04fe6-a560-4549-b459-02309cf643ad&limit=50&locale=ru_RU&offset_date='
 URL_PART_3 = 'T12%3A27%3A50.824879%2B07%3A00&rated=true&sort_by=date_edited'
-TOWN_PAIRS = {
-    'PERM': 'https://2gis.ru/perm/search/%D0%BE%D1%85%D1%80%D0%B0%D0%BD%D0%BD%D0%BE%D0%B5%20%D0%BF%D1%80%D0%B5%D0%B4%D0%BF%D1%80%D0%B8%D1%8F%D1%82%D0%B8%D0%B5?m=56.248179%2C58.007079%2F11',
-    'KRASNOYARSK': 'https://2gis.ru/krasnoyarsk/search/%D0%BE%D1%85%D1%80%D0%B0%D0%BD%D0%BD%D0%BE%D0%B5%20%D0%BF%D1%80%D0%B5%D0%B4%D0%BF%D1%80%D0%B8%D1%8F%D1%82%D0%B8%D0%B5?m=92.830745%2C56.005498%2F11',
-    'NEFTEYUGANSK': 'https://2gis.ru/nefteyugansk/search/%D0%BE%D1%85%D1%80%D0%B0%D0%BD%D0%BD%D0%BE%D0%B5%20%D0%BF%D1%80%D0%B5%D0%B4%D0%BF%D1%80%D0%B8%D1%8F%D1%82%D0%B8%D0%B5?m=72.615349%2C61.068648%2F11.55',
-    'HANTI-MANSIYSK': 'https://2gis.ru/kh_mansiysk/search/%D0%BE%D1%85%D1%80%D0%B0%D0%BD%D0%BD%D0%BE%D0%B5%20%D0%BF%D1%80%D0%B5%D0%B4%D0%BF%D1%80%D0%B8%D1%8F%D1%82%D0%B8%D0%B5?m=69.053016%2C60.998366%2F13.34',
-    'NIZNEVERTOVSK': 'https://2gis.ru/nizhnevartovsk/search/%D0%BE%D1%85%D1%80%D0%B0%D0%BD%D0%BD%D0%BE%D0%B5%20%D0%BF%D1%80%D0%B5%D0%B4%D0%BF%D1%80%D0%B8%D1%8F%D1%82%D0%B8%D0%B5?m=76.572051%2C60.933784%2F11',
-    }
+TOWN_PAIRS = {'town' : 'link'}
 
 
 def get_grefs(city_pairs: dict) -> None:
@@ -33,11 +27,11 @@ def get_grefs(city_pairs: dict) -> None:
     Base data scraping, get companys URLS and save them to file with path 2gis\\row_hrefs\\
     """
 
-    login = 'dnxfuf'
-    password = '24lhnBJG9a'
+    login = ''
+    password = ''
     proxy_options = {
         'proxy': {
-            'https': f'http://{login}:{password}@193.57.136.78:24531'
+            'https': f'http://{login}:{password}@'
         },
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36',
         "prefs": {"profile.default_content_setting_values.cookies": 2}

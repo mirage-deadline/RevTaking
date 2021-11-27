@@ -16,7 +16,7 @@ def get_proxy_site_html(url: str) -> str:
     headers = {
        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebt/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36' 
     }
-    proxies = {'http':'http://186.24.4.249:8080'}   
+    proxies = {'http':''}   
     r = requests.Session()
     response = r.get(url, headers=headers, proxies=proxies)
     soup = BeautifulSoup(response.text, 'lxml')
